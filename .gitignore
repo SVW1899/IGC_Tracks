@@ -1,0 +1,13 @@
+# Mac-Systemdateien ignorieren
+.DS_Store
+
+# Python-Zwischendateien ignorieren
+__pycache__/
+*.pyc
+
+# Die virtuelle Umgebung (die tausenden Bibliotheks-Dateien aus Anaconda) ignorieren
+.venv/
+env/
+
+# Jupyter Notebook Checkpoints ignorieren
+.ipynb_checkpoints
