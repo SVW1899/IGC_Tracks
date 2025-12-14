@@ -23,3 +23,18 @@ if os.path.exists(DATEINAME):
 
 else:
     print (DATEINAME + " nicht gefunden")
+
+## Liste für B-Records initialisieren
+b_records = []
+
+## Durchlaufen aller Zeilen in der Datei und Extrahieren der B-Records
+for zeile in inhalt:
+    if zeile.startswith('B'):
+        b_records.append(zeile.strip()) # .strip() entfernt überflüssige Leerzeichen und Zeilenumbrüche
+
+## Ausgabe der Anzahl der gefundenen B-Records
+print("Es wurden",len(b_records),"B-Records gefunden.")
+
+## Testausgabe der ersten 3 B-Records
+if len(b_records) >= 3:
+    print("Die ersten 3 B-Records:", b_records[:3])
