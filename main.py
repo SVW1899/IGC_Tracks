@@ -4,17 +4,22 @@ import os
 ## Einfügen der IGC-Track Datei
 DATEINAME = "data/0A4G3HI5.IGC"
 
-# 1. Wo steht Python gerade? (Current Working Directory)
-aktueller_ort = os.getcwd()
-print("Ich befinde mich hier:", aktueller_ort)
+## Kontrolle, ob die Datei existiert
+if os.path.exists(DATEINAME):
+    print (DATEINAME + " gefunden")
 
-# 2. Was sieht Python in diesem Ordner?
-print("Hier sehe ich folgende Dateien/Ordner:")
-print(os.listdir(aktueller_ort))
+    ## Datei öffnen und Zeilen einlesen; with open schließt die Datei automatisch wieder, 'r' steht für 'read'
+    with open(DATEINAME, "r") as datei:
+        inhalt = datei.readlines()
 
-# 3. Falls der Ordner 'data' existiert, schauen wir da mal rein
-if "data" in os.listdir(aktueller_ort):
-    print("\nIm Ordner 'data' sehe ich:")
-    print(os.listdir("data"))
+    ## Bestimmung der Anzahl der Zeilen in der Datei
+    anzahl_zeilen = len(inhalt)
+    print("Die Datei hat", anzahl_zeilen, "Zeilen.")
+
+    ## Ausgabe der ersten 5 Zeilen der Datei
+    print("\nDie ersten 5 Zeilen der Datei:")
+    for zeile in inhalt[:5]:
+        print(zeile.strip())  # .strip() entfernt überflüssige Leerzeichen und Zeilenumbrüche
+
 else:
-    print("\nIch sehe keinen Ordner namens 'data' hier.")
+    print (DATEINAME + " nicht gefunden")
