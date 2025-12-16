@@ -1,6 +1,6 @@
 ## Importieren der benötigten Module
 import os ## Modul, zur Kommunikation mit dem Betriebssystem
-#import pandas as pd ## Modul zur Arbeit mit Dataframes
+import pandas as pd ## Modul zur Arbeit mit Dataframes
 
 ## Funktion zum Einlesen und Aufbereiten der B-Records aus der IGC-Datei
 def parse_b_record(DATEINAME):
@@ -73,3 +73,10 @@ def parse_b_record(DATEINAME):
     
     ## Rückgabe der aufbereiteten Datenliste
     return data_list
+
+## Funktion zum Erstellen eines DataFrames aus den aufbereiteten Daten
+def create_dataframe(parsed_data):
+    df = pd.DataFrame(parsed_data)
+    return df
+
+    
