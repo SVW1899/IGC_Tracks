@@ -9,10 +9,9 @@ parsed_data = parse_b_record(DATEINAME)
 
 ## 3. Erstellen eines DataFrames aus den aufbereiteten Daten
 dataframe = create_dataframe(parsed_data)
-print("DataFrame erstellt mit", len(dataframe), "Einträgen.")
-print(dataframe.head())  ## Ausgabe der ersten Zeilen des DataFrames
-print("\nDatentypen der Spalten:")
-print(dataframe.info())  ## Ausgabe der Informationen zum DataFrame
+
+## 4. Ausgabe des Plots
+plot = plot_height_over_time(dataframe)
 
 
 
