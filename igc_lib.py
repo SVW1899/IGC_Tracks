@@ -3,26 +3,32 @@ import os ## Modul, zur Kommunikation mit dem Betriebssystem
 import pandas as pd ## Modul zur Arbeit mit Dataframes
 import datetime as dt ## Modul zur Arbeit mit Datum und Zeit
 import matplotlib.pyplot as plt ## Modul zur Erstellung von Diagrammen
+import geopandas as gpd ## Modul zur Erzeugung von Geometrien 
 
-
-
+## Funktion zur Umwandlung von Koordinaten im DMS-Format in das DD-Format
 def convert_into_DD(coordinate_str, is_lat_str=True):
-    direction = coordinate_str[-1]
-    value = coordinate_str[:-1]
 
+    direction = coordinate_str[-1] # Letztes Zeichen der Koordinate (N, S, E, W)
+    value = coordinate_str[:-1] # Koordinatenwert ohne Richtungsangabe
+
+    ## Umwandlung des Breitengrades (DDMMmmm)
     if is_lat_str == True:
-        lat_DD = int(value[0:2])
+        lat_DD = int(value[0:2]) 
         lat_MM = int(value[2:4])
         lat_mmmm = int(value[4:7])
         coord_DD = lat_DD + (lat_MM / 60) + (lat_mmmm / 1000 / 60)
 
+    ## Umwandlung des Längengrades (DDDMMmmm)
     else:
         lon_DDD = int(value[0:3])
         lon_MM = int(value[3:5])
         lon_mmmm = int(value[5:8])
         coord_DD = lon_DDD + (lon_MM / 60) + (lon_mmmm / 1000 / 60)
+    
+    ## Anpassung des Vorzeichens je nach Himmelsrichtung
     if direction in ['S', 'W']:
         coord_DD = coord_DD * (-1)
+    
     return coord_DD
 
 ## Funktion zum Einlesen und Aufbereiten der B-Records aus der IGC-Datei
@@ -113,3 +119,14 @@ def plot_height_over_time(df):
     df.plot(x='time', y='alt_baro', title='Höhenprofil barometrische Höhe', xlabel='Zeit', ylabel='barometrische Höhe (m)')
     plt.show()
     return plt
+
+## Funktion zum Plotten der Flugroute auf Karte 
+def plot_route(df):
+
+    ## Umwandeln der Koordinaten in Geometrien
+    geometry = gpd.points_from_xy(df['lon'], df['lat'])
+    
+    ## Erstellen eines GeoDataFrames
+    gdf = gpd.GeoDataFrame(
+        df, geometry=geometry, crs="EPSG:4326")
+    return gdf

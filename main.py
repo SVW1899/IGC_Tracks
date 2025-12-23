@@ -13,6 +13,10 @@ dataframe = create_dataframe(parsed_data)
 ## 4. Ausgabe des Plots
 plot = plot_height_over_time(dataframe)
 
+## 5. Plotten der Flugroute auf Karte
+gdf = plot_route(dataframe)
+print(gdf.head())
+
 
 
        
