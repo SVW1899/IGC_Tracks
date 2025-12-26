@@ -120,8 +120,8 @@ def plot_height_over_time(df):
     plt.show()
     return plt
 
-## Funktion zum Plotten der Flugroute auf Karte 
-def plot_route(df):
+## Funktion zum Erstellen eines GeoDataFrames aus dem DataFrame
+def creating_geodataframe(df):
 
     ## Umwandeln der Koordinaten in Geometrien
     geometry = gpd.points_from_xy(df['lon'], df['lat'])
@@ -130,3 +130,12 @@ def plot_route(df):
     gdf = gpd.GeoDataFrame(
         df, geometry=geometry, crs="EPSG:4326")
     return gdf
+
+## Funktion zum Testen der geometrischen Richtigkeit der aufgenommenen Punkte
+def test_plot_points (gdf):
+    gdf.plot(legend=True, markersize=0.5)
+    plt.title('Testplot zur Überprüfung der geometrischen Richtigkeit der aufgenommenen Punkte')
+    plt.xlabel('Längengrad')
+    plt.ylabel('Breitengrad')
+    plotted_route = plt.show()
+    return plotted_route

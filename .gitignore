@@ -11,3 +11,5 @@ env/
 
 # Jupyter Notebook Checkpoints ignorieren
 .ipynb_checkpoints
+Testplot_geometrische_Richtigkeit.png
+Figure_1.png

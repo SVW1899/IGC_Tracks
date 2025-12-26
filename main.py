@@ -14,9 +14,6 @@ dataframe = create_dataframe(parsed_data)
 plot = plot_height_over_time(dataframe)
 
 ## 5. Plotten der Flugroute auf Karte
-gdf = plot_route(dataframe)
-print(gdf.head())
+geodataframe = creating_geodataframe(dataframe)
 
-
-
-       
+points_on_map = test_plot_points(geodataframe)
