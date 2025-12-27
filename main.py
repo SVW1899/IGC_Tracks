@@ -17,3 +17,6 @@ plot = plot_height_over_time(dataframe)
 geodataframe = creating_geodataframe(dataframe)
 
 points_on_map = test_plot_points(geodataframe)
+
+## 6. Erstellen einer interaktiven Webkarte
+interactive_map = create_map(geodataframe, DATEINAME)

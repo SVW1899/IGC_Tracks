@@ -4,6 +4,8 @@ import pandas as pd ## Modul zur Arbeit mit Dataframes
 import datetime as dt ## Modul zur Arbeit mit Datum und Zeit
 import matplotlib.pyplot as plt ## Modul zur Erstellung von Diagrammen
 import geopandas as gpd ## Modul zur Erzeugung von Geometrien 
+import webbrowser as wb ## Modul, um erzeugte HTML-Datei im Browser zu öffnen
+from shapely import LineString ## Modul zur Erstellung eines LineStrings aus Koordinaten
 
 ## Funktion zur Umwandlung von Koordinaten im DMS-Format in das DD-Format
 def convert_into_DD(coordinate_str, is_lat_str=True):
@@ -126,6 +128,7 @@ def creating_geodataframe(df):
     ## Umwandeln der Koordinaten in Geometrien
     geometry = gpd.points_from_xy(df['lon'], df['lat'])
     
+
     ## Erstellen eines GeoDataFrames
     gdf = gpd.GeoDataFrame(
         df, geometry=geometry, crs="EPSG:4326")
@@ -139,3 +142,20 @@ def test_plot_points (gdf):
     plt.ylabel('Breitengrad')
     plotted_route = plt.show()
     return plotted_route
+
+## Funktion zum Erstellen einer interaktiven Webkarte
+def create_map(gdf, DATEINAME):
+    
+    
+    
+    map = gdf.explore()
+
+    #Speichern als Datei
+    filename = DATEINAME + "_map.html"
+    map.save(filename)
+    print("Karte gespeichert als:", filename)
+    
+    #Automatisches Öffnen der HTML-Datei im Browser
+    wb.open('file://' + os.path.realpath(filename))
+
+    return map
