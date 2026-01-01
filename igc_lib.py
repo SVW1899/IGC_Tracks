@@ -1,8 +1,11 @@
 ## Importieren der benötigten Module
 import os ## Modul, zur Kommunikation mit dem Betriebssystem
+import math ## Modul zur Arbeit mit mathematischen Funktionen
 import pandas as pd ## Modul zur Arbeit mit Dataframes
 import datetime as dt ## Modul zur Arbeit mit Datum und Zeit
+import numpy as np ## Modul zur Arbeit mit numerischen Daten
 import matplotlib.pyplot as plt ## Modul zur Erstellung von Diagrammen
+import matplotlib.dates as mdates ## Modul zur Arbeit mit Datumsangaben in Matplotlib
 import geopandas as gpd ## Modul zur Erzeugung von Geometrien 
 import webbrowser as wb ## Modul, um erzeugte HTML-Datei im Browser zu öffnen
 from shapely import LineString ## Modul zur Erstellung eines LineStrings aus Koordinaten
@@ -89,7 +92,7 @@ def parse_b_record(DATEINAME):
 
             ## Speichern der einzelnen extrahierten B-Records in ein Dictionary
             daten_punkt = {
-                "time": dt.time(int(timeHH), int(timeMM), int(timeSS)), #Umwandlung der Zeitangaben in timestamp
+                "time": dt.datetime(1900, 1, 1,int(timeHH), int(timeMM), int(timeSS)), #Umwandlung der Zeitangaben in timestamp mit fiktivem Datum (01.01.1900), da dies für die Berechnung der Zeitspanne relevant ist
                 "lat": convert_into_DD(lat_str, True), #Umwandlung Breitengrad DMS in DD
                 "lon": convert_into_DD(lon_str, False), #Umwandlung Längengrad DMS in DD
                 "alt_baro": int(alt_baro_str), #Umwandlung der barometrischen Höhe in einen Integer
@@ -118,7 +121,30 @@ def create_dataframe(parsed_data):
 
 ## Funktion zum Plotten der Höhe über der Zeit
 def plot_height_over_time(df):
-    df.plot(x='time', y='alt_baro', title='Höhenprofil barometrische Höhe', xlabel='Zeit', ylabel='barometrische Höhe (m)')
+    ax = df.plot(x='time', y='alt_baro', title='Höhenprofil barometrische Höhe', xlabel='Zeit', ylabel='barometrische Höhe (m)', label='barometrische Höhe')
+
+    ## Bestimmung der minimalen und maximalen Werte für die Achsenskalierung
+    min_hoehe = df['alt_baro'].min() # Ermittlung der minimalen Höhe
+    max_hoehe = df['alt_baro'].max() # Ermittlung der maximalen Höhe
+    min_scale = math.floor(min_hoehe / 100) * 100  # Abrunden auf den nächsten Hunderter
+    max_scale = math.ceil(max_hoehe / 100) * 100   # Aufrunden auf den nächsten Hunderter
+
+    start_time = df['time'].min() # Ermittlung der Startzeit
+    end_time = df['time'].max() # Ermittlung der Endzeit
+
+    ## Anpassen der Achsenskalierung
+    xmajor_ticks = pd.date_range(start=start_time, end=end_time, freq='5min') # Angabe der Hauptticks mit date_range, da Datetime-Objekte nicht mit np.arange funktionieren
+    xminor_ticks = pd.date_range(start=start_time, end=end_time, freq='1min') # Angabe der Nebenticks mit date_range, da Datetime-Objekte nicht mit np.arange funktionieren
+    ymajor_ticks = np.arange(min_scale, max_scale, step=100) # Angabe der Hauptticks für die y-Achse
+    yminor_ticks = np.arange(min_scale, max_scale, step=10) # Angabe der Nebenticks für die y-Achse
+    time_format = mdates.DateFormatter('%H:%M') # Formatierung der Zeitangaben auf der x-Achse
+    ax.xaxis.set_major_formatter(time_format) # Anwenden der Formatierung auf die x-Achse
+    ax.set_xticks(xmajor_ticks) # Setzen der Hauptticks auf der x-Achse
+    ax.set_xticks(xminor_ticks, minor=True) # Setzen der Nebenticks auf der x-Achse
+    ax.set_yticks(ymajor_ticks) # Setzen der Hauptticks auf der y-Achse
+    ax.set_yticks(yminor_ticks, minor=True) # Setzen der Nebenticks auf der y-Achse
+    ax.grid(which='minor', linewidth=0.5, linestyle='--') # Hinzufügen eines Rasters für die Nebenticks
+    ax.grid(which='major', linestyle='-') # Hinzufügen eines Rasters für die Hauptticks
     plt.show()
     return plt
 
@@ -145,17 +171,43 @@ def test_plot_points (gdf):
 
 ## Funktion zum Erstellen einer interaktiven Webkarte
 def create_map(gdf, DATEINAME):
-    
-    
-    
-    map = gdf.explore()
 
-    #Speichern als Datei
+    ## Erzeugen eines LineStrings aus den Punkten
+    line_geometry = LineString(gdf.geometry.tolist()) #tolist() muss hier verwendet werden, da LineString eine Liste von Koordinaten erwartet
+    
+    ## Erzeugen eines neuen GeoDataFrames für die Linie
+    gdf_track = gpd.GeoDataFrame(geometry=[line_geometry], crs="EPSG:4326")
+
+    ## Erstellen der interaktiven Karte mit der Flugroute
+    map = gdf_track.explore(style_kwds={"width": 3}, color='red')
+
+    ## Berechnung der Werte für Skalierung der Legende
+    min_alt = math.floor(gdf['alt_baro'].min()/100)*100 # Ermittlung der minimalen abgerundeten Höhe
+    max_alt = math.ceil(gdf['alt_baro'].max()/100)*100 # Ermittlung der maximalen aufgerundeten Höhe
+    legend_scale = list(range(min_alt, max_alt + 100, 100)) # Erstellen einer Liste für die Skalierung, da classification_kwds eine Liste erwartet
+    
+    ## Erstellen eines neuen Layers für die Darstellung der Höhen als Punkte
+    gdf.explore(
+        m=map, # Vorhandene Karte erweitern
+        column='alt_baro', # Spalte für die Farbgebung
+        cmap='plasma', # Auswahl der des Farbschemas
+        scheme='user_defined', # Klassifikationsmethode
+        k=5,  # Anzahl der Farben/Stufen in der Legende
+        vmin=min_alt,  # Erzwingen der Minimalwert für die Farbskala
+        vmax=max_alt,  # Erzwingen der Maximalwert für die Farbskala
+        classification_kwds={'bins': legend_scale}, # Keywords für die Klassifikation müssen als Dictionary übergeben werden
+        marker_kwds={'radius': 2}, # Keywords für die Marker müssen als Dictionary übergeben werden
+        legend_kwds={'caption': 'Barometrische Höhe (m)',
+                     'fmt': '{:.0f}'}, 
+        name='Höhenpunkte' # Name für die Ebenenkontrolle
+    )
+
+    ## Speichern als Datei
     filename = DATEINAME + "_map.html"
     map.save(filename)
     print("Karte gespeichert als:", filename)
     
-    #Automatisches Öffnen der HTML-Datei im Browser
+    ## Automatisches Öffnen der HTML-Datei im Browser
     wb.open('file://' + os.path.realpath(filename))
 
     return map
